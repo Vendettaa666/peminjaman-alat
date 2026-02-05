@@ -16,7 +16,7 @@ class PeminjamanController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         if ($user->role == 'peminjam') {
             // Peminjam hanya bisa melihat peminjaman mereka sendiri
             $peminjamans = Peminjaman::with(['peminjam', 'alat', 'petugas'])
@@ -26,7 +26,7 @@ class PeminjamanController extends Controller
             // Admin dan petugas bisa melihat semua peminjaman
             $peminjamans = Peminjaman::with(['peminjam', 'alat', 'petugas'])->get();
         }
-        
+
         return view('dashboard.peminjaman.index', compact('peminjamans'));
     }
 
@@ -36,12 +36,12 @@ class PeminjamanController extends Controller
     public function create()
     {
         $user = Auth::user();
-        
+
         if ($user->role == 'peminjam') {
             // Peminjam tidak bisa mengakses form create (hanya bisa mengajukan)
             return redirect()->route('peminjaman.index')->with('error', 'Anda tidak memiliki akses untuk membuat peminjaman langsung. Silakan ajukan peminjaman.');
         }
-        
+
         $users = User::where('role', 'peminjam')->get();
         $alats = Alat::where('stok', '>', 0)->get();
         $petugas = User::whereIn('role', ['admin', 'petugas'])->get();
@@ -54,11 +54,11 @@ class PeminjamanController extends Controller
     public function ajukan()
     {
         $user = Auth::user();
-        
+
         if ($user->role != 'peminjam') {
             return redirect()->route('peminjaman.create');
         }
-        
+
         $alats = Alat::where('stok', '>', 0)->get();
         return view('dashboard.peminjaman.ajukan', compact('alats'));
     }
@@ -69,7 +69,7 @@ class PeminjamanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        
+
         if ($user->role == 'peminjam') {
             // Peminjam mengajukan peminjaman untuk diri sendiri
             $request->validate([
@@ -146,9 +146,10 @@ class PeminjamanController extends Controller
      */
     public function edit($id)
     {
-        $user = auth()->user();
+        $user = Auth::user();
+
         $peminjaman = Peminjaman::findOrFail($id);
-        
+
         if ($user->role == 'peminjam') {
             // Peminjam hanya bisa edit peminjaman mereka sendiri dan hanya jika masih pending
             if ($peminjaman->user_id != $user->id) {
@@ -158,7 +159,7 @@ class PeminjamanController extends Controller
                 return redirect()->route('peminjaman.index')->with('error', 'Peminjaman yang sudah disetujui tidak dapat diedit.');
             }
         }
-        
+
         $users = User::where('role', 'peminjam')->get();
         $alats = Alat::all();
         $petugas = User::whereIn('role', ['admin', 'petugas'])->get();
@@ -171,7 +172,7 @@ class PeminjamanController extends Controller
     public function update(Request $request, $id)
     {
         $peminjaman = Peminjaman::findOrFail($id);
-        
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'alat_id' => 'required|exists:alats,id',
@@ -186,7 +187,7 @@ class PeminjamanController extends Controller
         if ($peminjaman->alat_id != $request->alat_id) {
             $oldAlat = Alat::find($peminjaman->alat_id);
             $oldAlat->increment('stok', $peminjaman->jumlah);
-            
+
             $newAlat = Alat::find($request->alat_id);
             if ($newAlat->stok < $request->jumlah) {
                 $oldAlat->decrement('stok', $peminjaman->jumlah);
@@ -213,9 +214,10 @@ class PeminjamanController extends Controller
      */
     public function destroy($id)
     {
-        $user = auth()->user();
+        $user = Auth::user();
+
         $peminjaman = Peminjaman::findOrFail($id);
-        
+
         if ($user->role == 'peminjam') {
             // Peminjam hanya bisa hapus peminjaman mereka sendiri dan hanya jika masih pending
             if ($peminjaman->user_id != $user->id) {
@@ -225,13 +227,13 @@ class PeminjamanController extends Controller
                 return redirect()->route('peminjaman.index')->with('error', 'Peminjaman yang sudah disetujui tidak dapat dihapus.');
             }
         }
-        
+
         // Restore stock jika peminjaman sudah approved
         if ($peminjaman->status == 'dipinjam') {
             $alat = Alat::find($peminjaman->alat_id);
             $alat->increment('stok', $peminjaman->jumlah);
         }
-        
+
         $peminjaman->delete();
 
         return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil dihapus');
@@ -242,33 +244,34 @@ class PeminjamanController extends Controller
      */
     public function approve($id)
     {
-        $user = auth()->user();
-        
+        $user = Auth::user();
+
+
         if (!in_array($user->role, ['admin', 'petugas'])) {
             return redirect()->route('peminjaman.index')->with('error', 'Anda tidak memiliki akses untuk menyetujui peminjaman.');
         }
-        
+
         $peminjaman = Peminjaman::findOrFail($id);
-        
+
         if ($peminjaman->status != 'pending') {
             return redirect()->route('peminjaman.index')->with('error', 'Peminjaman sudah diproses sebelumnya.');
         }
-        
+
         // Check stock availability
         $alat = Alat::find($peminjaman->alat_id);
         if ($alat->stok < $peminjaman->jumlah) {
             return redirect()->route('peminjaman.index')->with('error', 'Stok tidak mencukupi. Stok tersedia: ' . $alat->stok);
         }
-        
+
         // Update peminjaman
         $peminjaman->update([
             'status' => 'dipinjam',
             'id_petugas' => $user->id
         ]);
-        
+
         // Update stock
         $alat->decrement('stok', $peminjaman->jumlah);
-        
+
         return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil disetujui');
     }
 
@@ -277,20 +280,21 @@ class PeminjamanController extends Controller
      */
     public function reject($id)
     {
-        $user = auth()->user();
-        
+        $user = Auth::user();
+
+
         if (!in_array($user->role, ['admin', 'petugas'])) {
             return redirect()->route('peminjaman.index')->with('error', 'Anda tidak memiliki akses untuk menolak peminjaman.');
         }
-        
+
         $peminjaman = Peminjaman::findOrFail($id);
-        
+
         if ($peminjaman->status != 'pending') {
             return redirect()->route('peminjaman.index')->with('error', 'Peminjaman sudah diproses sebelumnya.');
         }
-        
+
         $peminjaman->update(['status' => 'ditolak']);
-        
+
         return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil ditolak');
     }
 }
