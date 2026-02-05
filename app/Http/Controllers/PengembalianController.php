@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Pengembalian;
 use App\Models\Peminjaman;
 use App\Models\Alat;
+use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Http\Request;
 
 class PengembalianController extends Controller
@@ -14,7 +16,7 @@ class PengembalianController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
+         $user = Auth::user();
         
         if ($user->role == 'peminjam') {
             // Peminjam hanya bisa melihat pengembalian mereka sendiri
@@ -36,7 +38,7 @@ class PengembalianController extends Controller
      */
     public function create()
     {
-        $user = auth()->user();
+         $user = Auth::user();
         
         if ($user->role == 'peminjam') {
             // Peminjam bisa mengajukan pengembalian untuk peminjaman mereka sendiri
@@ -61,12 +63,12 @@ class PengembalianController extends Controller
      */
     public function store(Request $request)
     {
-        $user = auth()->user();
+         $user = Auth::user();
         
         $request->validate([
             'peminjaman_id' => 'required|exists:peminjaman,id',
             'tanggal_kembali' => 'required|date',
-            'denda' => 'nullable|numeric|min:0',
+            // 'denda' => 'nullable|numeric|min:0',
             'kondisi_alat' => 'required|in:baik,rusak ringan,rusak berat',
         ]);
 
@@ -119,7 +121,7 @@ class PengembalianController extends Controller
         $request->validate([
             'peminjaman_id' => 'required|exists:peminjaman,id',
             'tanggal_kembali' => 'required|date',
-            'denda' => 'nullable|numeric|min:0',
+            // 'denda' => 'nullable|numeric|min:0',
             'kondisi_alat' => 'required|in:baik,rusak ringan,rusak berat',
         ]);
 

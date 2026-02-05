@@ -20,7 +20,7 @@
                 {{ ucfirst($pengembalian->kondisi_alat) }}
             </span>
         </p>
-        <p><strong>Denda:</strong> Rp {{ number_format($pengembalian->denda ?? 0, 0, ',', '.') }}</p>
+        {{-- <p><strong>Denda:</strong> Rp {{ number_format($pengembalian->denda ?? 0, 0, ',', '.') }}</p> --}}
         <p><strong>Petugas:</strong> {{ $pengembalian->peminjaman->petugas->nama_lengkap }}</p>
         <p><strong>Dibuat:</strong> {{ $pengembalian->created_at->format('d M Y H:i') }}</p>
     </div>

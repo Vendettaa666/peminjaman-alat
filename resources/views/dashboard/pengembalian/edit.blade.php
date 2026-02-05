@@ -23,10 +23,10 @@
                 <input type="date" name="tanggal_kembali" class="w-full p-2 border rounded" value="{{ $pengembalian->tanggal_kembali }}">
             </div>
 
-            <div class="mb-4">
+            {{-- <div class="mb-4">
                 <label class="block text-gray-700 font-bold mb-2">Denda (Rp)</label>
                 <input type="number" name="denda" min="0" step="1000" class="w-full p-2 border rounded" value="{{ $pengembalian->denda ?? 0 }}">
-            </div>
+            </div> --}}
         </div>
 
         <div class="mb-4">

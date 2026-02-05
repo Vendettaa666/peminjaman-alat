@@ -197,13 +197,13 @@ class DatabaseSeeder extends Seeder
             [
                 'peminjaman_id' => 2, // Proyektor Epson yang sudah dikembalikan
                 'tanggal_kembali' => '2026-02-02',
-                'denda' => 0,
+                // 'denda' => 0,
                 'kondisi_alat' => 'baik',
             ],
             [
                 'peminjaman_id' => 5, // Gitar Akustik yang sudah dikembalikan
                 'tanggal_kembali' => '2026-02-07',
-                'denda' => 5000,
+                // 'denda' => 5000,
                 'kondisi_alat' => 'rusak ringan',
             ],
         ];

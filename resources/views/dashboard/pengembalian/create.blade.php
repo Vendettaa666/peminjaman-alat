@@ -24,11 +24,11 @@
                 @error('tanggal_kembali') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <div class="mb-4">
+            {{-- <div class="mb-4">
                 <label class="block text-gray-700 font-bold mb-2">Denda (Rp)</label>
                 <input type="number" name="denda" min="0" step="1000" class="w-full p-2 border rounded @error('denda') border-red-500 @enderror" value="{{ old('denda', 0) }}">
                 @error('denda') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-            </div>
+            </div> --}}
         </div>
 
         <div class="mb-4">

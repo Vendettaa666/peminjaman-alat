@@ -13,7 +13,7 @@
                 <th class="p-3">Alat</th>
                 <th class="p-3">Tanggal Kembali</th>
                 <th class="p-3">Kondisi</th>
-                <th class="p-3">Denda</th>
+                {{-- <th class="p-3">Denda</th> --}}
                 <th class="p-3 text-center">Aksi</th>
             </tr>
         </thead>
@@ -28,7 +28,7 @@
                         {{ ucfirst($p->kondisi_alat) }}
                     </span>
                 </td>
-                <td class="p-3">Rp {{ number_format($p->denda ?? 0, 0, ',', '.') }}</td>
+                {{-- <td class="p-3">Rp {{ number_format($p->denda ?? 0, 0, ',', '.') }}</td> --}}
                 <td class="p-3 flex justify-center space-x-2">
                     <a href="{{ route('pengembalian.show', $p->id) }}" class="text-blue-600">Detail</a>
                     <a href="{{ route('pengembalian.edit', $p->id) }}" class="text-yellow-600">Edit</a>

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('peminjaman_id')->constrained('peminjaman')->onDelete('cascade');
             $table->date('tanggal_kembali');
-            $table->decimal('denda', 8, 2)->default(0);
+            // $table->decimal('denda', 8, 2)->default(0);
             $table->text('kondisi_alat')->nullable();
             $table->timestamps();
         });
