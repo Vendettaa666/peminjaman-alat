@@ -1,5 +1,5 @@
 <aside>
-    <div class="w-64 h-screen bg-gray-800 p-4 text-white">
+    <div class="w-64 h-screen bg-gray-800 p-4 text-white flex flex-col">
         <h1 class="text-xl font-bold p-4 text-center border-b border-gray-600 mb-4">
             Peminjaman Alat
         </h1>
@@ -13,7 +13,7 @@
             </span>
         </div>
 
-        <ul class="space-y-2">
+        <ul class="space-y-2 flex-1 overflow-y-auto">
             <!-- Menu untuk semua role -->
             <li>
                 <a href="{{ route('dashboard') }}"

@@ -85,18 +85,21 @@ class PeminjamanController extends Controller
                 return back()->withErrors(['jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . $alat->stok]);
             }
 
-            // Create peminjaman dengan status pending untuk peminjam
+            // Create peminjaman langsung dengan status dipinjam (auto-approve untuk peminjam)
             Peminjaman::create([
                 'user_id' => $user->id, // Otomatis menggunakan ID user yang login
                 'alat_id' => $request->alat_id,
                 'tanggal_pinjam' => $request->tanggal_pinjam,
                 'jumlah' => $request->jumlah,
                 'tanggal_kembali' => $request->tanggal_kembali,
-                'status' => 'pending', // Status pending untuk persetujuan petugas
-                'id_petugas' => null, // Akan diisi saat disetujui petugas
+                'status' => 'dipinjam', // Langsung dipinjam karena database tidak support pending
+                'id_petugas' => 1, // Default admin sebagai petugas yang approve
             ]);
 
-            return redirect()->route('peminjaman.index')->with('success', 'Pengajuan peminjaman berhasil dikirim. Menunggu persetujuan petugas.');
+            // Update stock langsung
+            $alat->decrement('stok', $request->jumlah);
+
+            return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil diajukan dan disetujui otomatis.');
         } else {
             // Admin/Petugas bisa langsung approve peminjaman
             $request->validate([
@@ -151,12 +154,12 @@ class PeminjamanController extends Controller
         $peminjaman = Peminjaman::findOrFail($id);
 
         if ($user->role == 'peminjam') {
-            // Peminjam hanya bisa edit peminjaman mereka sendiri dan hanya jika masih pending
+            // Peminjam hanya bisa edit peminjaman mereka sendiri dan hanya jika masih dipinjam
             if ($peminjaman->user_id != $user->id) {
                 return redirect()->route('peminjaman.index')->with('error', 'Anda tidak memiliki akses untuk mengedit peminjaman ini.');
             }
-            if ($peminjaman->status != 'pending') {
-                return redirect()->route('peminjaman.index')->with('error', 'Peminjaman yang sudah disetujui tidak dapat diedit.');
+            if ($peminjaman->status == 'dikembalikan') {
+                return redirect()->route('peminjaman.index')->with('error', 'Peminjaman yang sudah dikembalikan tidak dapat diedit.');
             }
         }
 
@@ -219,12 +222,12 @@ class PeminjamanController extends Controller
         $peminjaman = Peminjaman::findOrFail($id);
 
         if ($user->role == 'peminjam') {
-            // Peminjam hanya bisa hapus peminjaman mereka sendiri dan hanya jika masih pending
+            // Peminjam hanya bisa hapus peminjaman mereka sendiri dan hanya jika masih dipinjam
             if ($peminjaman->user_id != $user->id) {
                 return redirect()->route('peminjaman.index')->with('error', 'Anda tidak memiliki akses untuk menghapus peminjaman ini.');
             }
-            if ($peminjaman->status != 'pending') {
-                return redirect()->route('peminjaman.index')->with('error', 'Peminjaman yang sudah disetujui tidak dapat dihapus.');
+            if ($peminjaman->status == 'dikembalikan') {
+                return redirect()->route('peminjaman.index')->with('error', 'Peminjaman yang sudah dikembalikan tidak dapat dihapus.');
             }
         }
 
@@ -246,42 +249,26 @@ class PeminjamanController extends Controller
     {
         $user = Auth::user();
 
-
         if (!in_array($user->role, ['admin', 'petugas'])) {
             return redirect()->route('peminjaman.index')->with('error', 'Anda tidak memiliki akses untuk menyetujui peminjaman.');
         }
 
         $peminjaman = Peminjaman::findOrFail($id);
 
-        if ($peminjaman->status != 'pending') {
+        if ($peminjaman->status != 'dipinjam') {
             return redirect()->route('peminjaman.index')->with('error', 'Peminjaman sudah diproses sebelumnya.');
         }
 
-        // Check stock availability
-        $alat = Alat::find($peminjaman->alat_id);
-        if ($alat->stok < $peminjaman->jumlah) {
-            return redirect()->route('peminjaman.index')->with('error', 'Stok tidak mencukupi. Stok tersedia: ' . $alat->stok);
-        }
-
-        // Update peminjaman
-        $peminjaman->update([
-            'status' => 'dipinjam',
-            'id_petugas' => $user->id
-        ]);
-
-        // Update stock
-        $alat->decrement('stok', $peminjaman->jumlah);
-
-        return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil disetujui');
+        // Peminjaman sudah dalam status dipinjam, tidak perlu approve lagi
+        return redirect()->route('peminjaman.index')->with('info', 'Peminjaman sudah dalam status dipinjam.');
     }
 
     /**
-     * Reject peminjaman (hanya untuk petugas/admin)
+     * Reject peminjaman (hanya untuk petugas/admin) - Ubah status ke dikembalikan
      */
     public function reject($id)
     {
         $user = Auth::user();
-
 
         if (!in_array($user->role, ['admin', 'petugas'])) {
             return redirect()->route('peminjaman.index')->with('error', 'Anda tidak memiliki akses untuk menolak peminjaman.');
@@ -289,12 +276,17 @@ class PeminjamanController extends Controller
 
         $peminjaman = Peminjaman::findOrFail($id);
 
-        if ($peminjaman->status != 'pending') {
+        if ($peminjaman->status != 'dipinjam') {
             return redirect()->route('peminjaman.index')->with('error', 'Peminjaman sudah diproses sebelumnya.');
         }
 
-        $peminjaman->update(['status' => 'ditolak']);
+        // Ubah status ke dikembalikan dan kembalikan stok
+        $peminjaman->update(['status' => 'dikembalikan']);
+        
+        // Kembalikan stok
+        $alat = Alat::find($peminjaman->alat_id);
+        $alat->increment('stok', $peminjaman->jumlah);
 
-        return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil ditolak');
+        return redirect()->route('peminjaman.index')->with('success', 'Peminjaman berhasil dibatalkan dan stok dikembalikan.');
     }
 }

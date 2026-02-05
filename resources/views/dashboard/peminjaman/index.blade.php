@@ -38,9 +38,7 @@
                 <td class="p-3">{{ $p->jumlah }}</td>
                 <td class="p-3">
                     <span class="px-2 py-1 rounded text-xs 
-                        {{ $p->status == 'pending' ? 'bg-yellow-100 text-yellow-700' : 
-                           ($p->status == 'dipinjam' ? 'bg-blue-100 text-blue-700' : 
-                           ($p->status == 'dikembalikan' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')) }}">
+                        {{ $p->status == 'dipinjam' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700' }}">
                         {{ ucfirst($p->status) }}
                     </span>
                 </td>
@@ -48,30 +46,25 @@
                     <a href="{{ route('peminjaman.show', $p->id) }}" class="text-blue-600">Detail</a>
                     
                     @if(auth()->user()->role == 'peminjam')
-                        @if($p->status == 'pending')
-                            <a href="{{ route('peminjaman.edit', $p->id) }}" class="text-yellow-600">Edit</a>
-                            <form action="{{ route('peminjaman.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus pengajuan?')">
-                                @csrf @method('DELETE')
-                                <button class="text-red-600">Hapus</button>
-                            </form>
-                        @endif
-                    @else
-                        @if($p->status == 'pending')
-                            <form action="{{ route('peminjaman.approve', $p->id) }}" method="POST" style="display: inline;">
-                                @csrf
-                                <button class="text-green-600" onclick="return confirm('Setujui peminjaman?')">Setujui</button>
-                            </form>
-                            <form action="{{ route('peminjaman.reject', $p->id) }}" method="POST" style="display: inline;">
-                                @csrf
-                                <button class="text-red-600" onclick="return confirm('Tolak peminjaman?')">Tolak</button>
-                            </form>
-                        @else
+                        @if($p->status == 'dipinjam')
                             <a href="{{ route('peminjaman.edit', $p->id) }}" class="text-yellow-600">Edit</a>
                             <form action="{{ route('peminjaman.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus peminjaman?')">
                                 @csrf @method('DELETE')
                                 <button class="text-red-600">Hapus</button>
                             </form>
                         @endif
+                    @else
+                        @if($p->status == 'dipinjam')
+                            <form action="{{ route('peminjaman.reject', $p->id) }}" method="POST" style="display: inline;">
+                                @csrf
+                                <button class="text-red-600" onclick="return confirm('Batalkan peminjaman?')">Batalkan</button>
+                            </form>
+                        @endif
+                        <a href="{{ route('peminjaman.edit', $p->id) }}" class="text-yellow-600">Edit</a>
+                        <form action="{{ route('peminjaman.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Hapus peminjaman?')">
+                            @csrf @method('DELETE')
+                            <button class="text-red-600">Hapus</button>
+                        </form>
                     @endif
                 </td>
             </tr>
