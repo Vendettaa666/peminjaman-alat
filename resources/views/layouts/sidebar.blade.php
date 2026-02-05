@@ -135,7 +135,7 @@
         </ul>
 
         <!-- Logout Button -->
-        <div class="absolute bottom-4 left-4 right-4">
+        <div class="mt-auto pt-4 border-t border-gray-600">
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit"
