@@ -61,12 +61,15 @@ Route::middleware('auth')->group(function () {
     Route::prefix('peminjaman')->name('peminjaman.')->group(function () {
         Route::get('/', [PeminjamanController::class, 'index'])->name('index');
         Route::get('/create', [PeminjamanController::class, 'create'])->name('create');
+        Route::get('/ajukan', [PeminjamanController::class, 'ajukan'])->name('ajukan');
         Route::post('/store', [PeminjamanController::class, 'store'])->name('store');
         Route::get('/edit/{id}', [PeminjamanController::class, 'edit'])->name('edit');
         Route::get('/{id}', [PeminjamanController::class, 'show'])->name('show');
         Route::patch('/{id}', [PeminjamanController::class, 'update'])->name('update');
         Route::put('/{id}', [PeminjamanController::class, 'update'])->name('update');
         Route::delete('/{id}', [PeminjamanController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/approve', [PeminjamanController::class, 'approve'])->name('approve');
+        Route::post('/{id}/reject', [PeminjamanController::class, 'reject'])->name('reject');
     });
 
     Route::prefix('log_aktivitas')->name('log_aktivitas.')->group(function () {

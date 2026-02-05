@@ -14,7 +14,20 @@ class PengembalianController extends Controller
      */
     public function index()
     {
-        $pengembalians = Pengembalian::with(['peminjaman.peminjam', 'peminjaman.alat'])->get();
+        $user = auth()->user();
+        
+        if ($user->role == 'peminjam') {
+            // Peminjam hanya bisa melihat pengembalian mereka sendiri
+            $pengembalians = Pengembalian::with(['peminjaman.peminjam', 'peminjaman.alat'])
+                ->whereHas('peminjaman', function($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->get();
+        } else {
+            // Admin dan petugas bisa melihat semua pengembalian
+            $pengembalians = Pengembalian::with(['peminjaman.peminjam', 'peminjaman.alat'])->get();
+        }
+        
         return view('dashboard.pengembalian.index', compact('pengembalians'));
     }
 
@@ -23,10 +36,23 @@ class PengembalianController extends Controller
      */
     public function create()
     {
-        $peminjamans = Peminjaman::with(['peminjam', 'alat'])
-            ->where('status', 'dipinjam')
-            ->whereDoesntHave('pengembalian')
-            ->get();
+        $user = auth()->user();
+        
+        if ($user->role == 'peminjam') {
+            // Peminjam bisa mengajukan pengembalian untuk peminjaman mereka sendiri
+            $peminjamans = Peminjaman::with(['peminjam', 'alat'])
+                ->where('status', 'dipinjam')
+                ->where('user_id', $user->id)
+                ->whereDoesntHave('pengembalian')
+                ->get();
+        } else {
+            // Admin dan petugas bisa memproses semua pengembalian
+            $peminjamans = Peminjaman::with(['peminjam', 'alat'])
+                ->where('status', 'dipinjam')
+                ->whereDoesntHave('pengembalian')
+                ->get();
+        }
+        
         return view('dashboard.pengembalian.create', compact('peminjamans'));
     }
 
@@ -35,6 +61,8 @@ class PengembalianController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
+        
         $request->validate([
             'peminjaman_id' => 'required|exists:peminjaman,id',
             'tanggal_kembali' => 'required|date',
@@ -43,6 +71,11 @@ class PengembalianController extends Controller
         ]);
 
         $peminjaman = Peminjaman::findOrFail($request->peminjaman_id);
+        
+        // Cek akses untuk peminjam
+        if ($user->role == 'peminjam' && $peminjaman->user_id != $user->id) {
+            return redirect()->route('pengembalian.index')->with('error', 'Anda tidak memiliki akses untuk mengembalikan peminjaman ini.');
+        }
         
         // Create pengembalian
         Pengembalian::create($request->all());
