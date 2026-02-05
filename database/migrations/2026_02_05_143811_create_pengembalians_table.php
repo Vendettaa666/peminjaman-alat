@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kategoris', function (Blueprint $table) {
+        Schema::create('pengembalians', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_kategori');
+            $table->foreignId('peminjaman_id')->constrained('peminjaman')->onDelete('cascade');
+            $table->date('tanggal_kembali');
+            $table->decimal('denda', 8, 2)->default(0);
+            $table->text('kondisi_alat')->nullable();
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kategoris');
+        Schema::dropIfExists('pengembalians');
     }
 };
