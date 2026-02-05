@@ -7,13 +7,38 @@
                 <a href="{{ route('dashboard') }}"
                     class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white">Home</a>
             </li>
+            <li class="mb-4">
+                <a href="{{ route('alat.index') }}"
+                    class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white">Alat</a>
+            </li>
+
+            <li class="mb-4">
+                <a href="{{ route('user.index') }}"
+                    class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white">Alat</a>
+            </li>
+            <li class="mb-4">
+                <a href="{{ route('peminjaman.index') }}"
+                    class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white">Alat</a>
+            </li>
+            <li class="mb-4">
+                <a href="{{ route('log_aktivitas.index') }}"
+                    class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white">Alat</a>
+            </li>
+            <li class="mb-4">
+                <a href="{{ route('pengembalian.index') }}"
+                    class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white">Alat</a>
+            </li>
             @if(Auth::user()->role === 'admin')
-               
+                <li class="mb-2">
+                    <a href="{{ route('kategori.index') }}"
+                        class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white transition">Kategori</a>
+                </li>
+                
             @endif
 
             <li class="mb-4">
                 <a href=""
-                    class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white">input Aspirasi</a>
+                    class="block px-4 py-2 rounded hover:bg-gray-700 hover:text-white">-</a>
             </li>
         </ul>
         <button>
